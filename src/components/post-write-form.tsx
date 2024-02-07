@@ -99,7 +99,7 @@ export default function PostWriteForm() {
         const locationRef = ref(
           // 업로드 된 파일이 저장되는 폴더 명과 파일 명 지정
           storage, // 인스턴스
-          `feeds/${user.uid}-${user.displayName}/${doc.id}` // feeds폴더/유저폴더/파일명
+          `feeds/${user.uid}/${doc.id}` // feeds폴더/유저폴더/파일명
         )
         const result = await uploadBytes(locationRef, file) // 어떤 파일을 어디에 저장할 것인지 // promise 반환 -> 업로드 결과에 대한 참조가 있다
         const url = await getDownloadURL(result.ref) // 업로드한 이미지 URL
