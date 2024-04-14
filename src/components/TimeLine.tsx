@@ -1,24 +1,29 @@
 import { collection, onSnapshot, orderBy, query } from 'firebase/firestore'
 import { useEffect, useState } from 'react'
-import { styled } from 'styled-components'
 import { db } from '../firebase'
+import styled from 'styled-components'
 import Feed from './Feed'
 import { Unsubscribe } from 'firebase/auth'
 
-// DB 구조
 export interface IFeed {
   id: string
-  photo?: string // 필수가 아니다
   feed: string
   userId: string
-  username: string
+  userName: string
   createdAt: number
+  photo?: string
 }
 
-const Wrapper = styled.div``
+const Wrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+`
 
 export default function Timeline() {
-  const [feeds, setFeed] = useState<IFeed[]>([])
+  // 쿼리대로 DB에서 얻어온 값 -> 상태 저장
+  const [feeds, setFeeds] = useState<IFeed[]>([])
+
   useEffect(() => {
     let unsubscribe: Unsubscribe | null = null
 
@@ -29,33 +34,36 @@ export default function Timeline() {
         collection(db, 'feeds'), // feed 컬렉션에서
         orderBy('createdAt', 'desc') // 최신 순으로 (내림차)
       )
+
+      // DB에 변동사항이 생길 때마다, 다시 setState
       unsubscribe = await onSnapshot(feedsQuery, (snapshot) => {
-        const feeds = snapshot.docs.map((doc) => {
-          const { feed, createdAt, userId, username, photo } = doc.data()
+        const feedsArr = snapshot.docs.map((doc) => {
+          const { feed, userId, userName, createdAt, photo } = doc.data()
 
           return {
-            feed,
-            createdAt,
-            userId,
-            username,
-            photo,
             id: doc.id,
+            feed,
+            userId,
+            userName,
+            createdAt,
+            photo,
           }
         })
-        setFeed(feeds) // 얻은 데이터 객체를 setState
+
+        setFeeds(feedsArr)
       })
     }
 
-    fetchFeeds() // 페칭
+    fetchFeeds() // 데이터 페칭
 
     return () => {
       if (unsubscribe) {
         unsubscribe()
-        console.log('실행')
+        console.log('구독 취소')
       }
-      // unsubscribe && unsubscribe();
     }
   }, [])
+
   return (
     <Wrapper>
       {feeds.map((feed) => (
